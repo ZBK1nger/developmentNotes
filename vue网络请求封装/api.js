@@ -1,5 +1,7 @@
 import axios from 'axios'
 import QS from 'qs'
+import { MessageBox } from 'element-ui'
+import router from '../router'
 axios.defaults.timeout = 5000
 axios.defaults.baseURL =
   process.env.NODE_ENV === 'development'
@@ -19,10 +21,25 @@ axios.interceptors.request.use(
     return Promise.reject(err)
   }
 )
-
+var count = 1
 //响应拦截器即异常处理
 axios.interceptors.response.use(
   response => {
+    if (response.data.message==='token不正确!') {
+      count -= 1
+      if (count === 0) {
+        MessageBox.confirm('用户已在其他地方登录!', '提示', {
+          confirmButtonText: '确定',
+          showCancelButton : false,
+          showClose : false,
+          closeOnClickModal : false,
+          type: 'warning'
+        }).then(() => {
+          sessionStorage.clear()
+          location.assign('/')
+        })
+      }
+    }
     return response
   },
   err => {

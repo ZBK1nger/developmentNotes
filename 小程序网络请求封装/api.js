@@ -1,193 +1,102 @@
-import axios from 'axios'
-import QS from 'qs'
-import { MessageBox } from 'element-ui'
-import router from '../router'
-axios.defaults.timeout = 5000
-axios.defaults.baseURL =
-  process.env.NODE_ENV === 'development'
-    ? 'http://10.200.11.173:8099/gxdkmzjzl'
-    : 'http://kmzl.cindata.cn/gxdkmzjzl'
+var app = getApp()
+const util = require('../utils/util.js')
+const user = require('../utils/user.js')
+/**
+ * 发起get请求
+ * @param url 请求路径 必填
+ * @param data 请求参数 get请求的参数会自动拼到地址后面
+ * @param headers 请求头 选填
+ * @returns {Promise}
+ */
+export const get = (url, data, headers) => request('GET', url, data, headers);
 
-//http request 拦截器
-axios.interceptors.request.use(
-  config => {
-    //config.data = QS.stringify(config.data)
-    config.headers['X-Access-Token'] = sessionStorage.token
-      ? sessionStorage.token
-      : ''
-    return config
-  },
-  error => {
-    return Promise.reject(err)
-  }
-)
-var count = 1
-//响应拦截器即异常处理
-axios.interceptors.response.use(
-  response => {
-    if (response.data.message==='token不正确!') {
-      count -= 1
-      if (count === 0) {
-        MessageBox.confirm('用户已在其他地方登录!', '提示', {
-          confirmButtonText: '确定',
-          showCancelButton : false,
-          showClose : false,
-          closeOnClickModal : false,
-          type: 'warning'
-        }).then(() => {
-          sessionStorage.clear()
-          location.assign('/')
-        })
-      }
+/**
+ * 发起post请求
+ * @param url 请求路径 必填
+ * @param data 请求参数
+ * @param headers 请求头 选填
+ * @returns {Promise}
+ */
+export const post = (url, data, headers) => request('POST', url, data, headers);
+/**
+ * 发起put请求
+ * @param url 请求路径 必填
+ * @param data 请求参数
+ * @param headers 请求头 选填
+ * @returns {Promise}
+ */
+export const put = (url, data, headers) => request('PUT', url, data, headers);
+/**
+ * 发起delete请求
+ * @param url 请求路径 必填
+ * @param data 请求参数 delete请求的参数会自动拼到地址后面
+ * @param headers 请求头 选填
+ * @returns {Promise}
+ */
+export const del = (url, data, headers) => request('DELETE', url, data, headers);
+
+/**
+ * 接口请求基类方法
+ * @param method 请求方法 必填
+ * @param url 请求路径 必填
+ * @param data 请求参数
+ * @param header 请求头 选填
+ * @returns {Promise}
+ */
+export function request(method, url, data, header ) {
+  if(util.judgeObj(header)) {
+    header = {
+      'content-type': 'application/json'
     }
-    return response
-  },
-  err => {
-    if (err && err.response) {
-      switch (err.response.status) {
-        case 400:
-          console.log('错误请求')
-          break
-        case 401:
-          console.log('未授权，请重新登录')
-          break
-        case 403:
-          console.log('拒绝访问')
-          break
-        case 404:
-          console.log('请求错误,未找到该资源')
-          break
-        case 405:
-          console.log('请求方法未允许')
-          break
-        case 408:
-          console.log('请求超时')
-          break
-        case 500:
-          console.log('服务器端出错')
-          break
-        case 501:
-          console.log('网络未实现')
-          break
-        case 502:
-          console.log('网络错误')
-          break
-        case 503:
-          console.log('服务不可用')
-          break
-        case 504:
-          console.log('网络超时')
-          break
-        case 505:
-          console.log('http版本不支持该请求')
-          break
-        default:
-          console.log(`连接错误${err.response.status}`)
-      }
-    } else {
-      console.log('连接到服务器失败')
-    }
-    return Promise.resolve(err.response)
   }
-)
+  console.group('==============>新请求<==============');
+  console.info(method, url);
+  //添加参数
+  data["t"] = new Date().getTime()
+  if (user.isLogin()) {
+    //data["userId"] = user.isLogin().userId
+    header["X-Access-Token"] = user.isLogin().token ? user.isLogin().token : ""
+  }
 
-/**
- * 封装get方法
- * @param url
- * @param data
- * @returns {Promise}
- */
-
-export function get(url, params = {}) {
+  if (data) console.info('参数：', data);
   return new Promise((resolve, reject) => {
-    axios
-      .get(url, {
-        params: params
-      })
-      .then(response => {
-        resolve(response.data)
-      })
-      .catch(err => {
-        reject(err)
-      })
-  })
-}
-
-/**
- * 封装post请求 application/json格式
- * @param url
- * @param data
- * @returns {Promise}
- */
-
-export function post(url, data = {}) {
-  return new Promise((resolve, reject) => {
-    axios.post(url, data).then(
-      response => {
-        resolve(response.data)
-      },
-      err => {
-        reject(err)
-      }
-    )
-  })
-}
-
-/**
- * post请求,application/x-www-form-urlencoded格式
- * @param url
- * @param data
- * @returns {Promise}
- */
-
-export function patch(url, data = {}) {
-  return new Promise((resolve, reject) => {
-    axios
-      .post(url, QS.stringify(data), {
-        headers: { 'content-type': 'application/x-www-form-urlencoded' }
-      })
-      .then(
-        response => {
-          resolve(response.data)
-        },
-        err => {
-          reject(err)
+    const response = {};
+    wx.request({
+      url,
+      method,
+      data,
+      header,
+      success: (res) => response.success = res.data,
+      fail: (error) => response.fail = error,
+      complete() {
+        if (response.success.success) {
+          console.info('请求成功：', response.success);
+          resolve(response.success)
+        } else {
+          wx.hideLoading()
+          console.info('请求失败：', response.fail);
+          reject(response.fail)
         }
-      )
-  })
-}
-
-/**
- * 封装put请求
- * @param url
- * @param data
- * @returns {Promise}
- */
-
-export function put(url, data = {}) {
-  return new Promise((resolve, reject) => {
-    axios.put(url, data).then(
-      response => {
-        resolve(response.data)
+        console.groupEnd();
       },
-      err => {
-        reject(err)
-      }
-    )
-  })
+    });
+  });
 }
 
+
 /**
- * 下面是获取数据的接口
+ * 服务器根域名
+ * @type {string}
  */
-/**
- * 测试接口
- * 名称：exam
- * 参数：paramObj/null
- * 方式：fetch/post/patch/put
- */
-export const server = {
-  exam: function(paramObj) {
-    return post('/api.php?ac=v2_djList', paramObj)
-  }
-}
+
+/** 正式 */
+// export const API_ROOT = 'https://gzzshoutest.cindata.cn';
+
+/** 测试 */
+//export const API_ROOT = 'http://10.200.11.173:8080';
+
+/** 本地 */
+//export const API_ROOT = 'http://10.200.18.240:8080';
+
+//客户
+export const API_ROOT = 'https://yjcustom.cindata.cn';

@@ -1,7 +1,17 @@
-##### 1字符串分割为数组
+##### 1字符串分割为数组，数组按标示分割为字符串
 ~~~
 let string = "我是测试字符串"
 let array = [...new Set(string)]
+~~~
+
+~~~
+let string = "1,2,3,4"
+let array = string.split(',')
+~~~
+
+~~~
+let array = [1,2,3]
+let string = array.join('|')
 ~~~
 
 ##### 2 map方法返回一个新数组
@@ -49,3 +59,8 @@ fontSize = 750 / 100 = 7.5
 640屏幕宽度 13.33rem 85px
 
 480屏幕宽度 13.33rem 64px
+
+
+##### 5 flex换行布局
+
+一个display：flex的容器，横向的标题和内容，标题不换行，内容换行，则标题设置white-space : nowrap; 内容设置

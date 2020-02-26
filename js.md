@@ -64,3 +64,8 @@ fontSize = 750 / 100 = 7.5
 ##### 5 flex换行布局
 
 一个display：flex的容器，横向的标题和内容，标题不换行，内容换行，则标题设置white-space : nowrap; 内容设置
+
+
+##### 6 mac chrome关闭跨域模式
+
+open -n /Applications/Google\ Chrome.app/ --args --disable-web-security --user-data-dir=/Users/zhangbo/MyChromeDevUserData/

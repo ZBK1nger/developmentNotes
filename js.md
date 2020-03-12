@@ -63,9 +63,40 @@ fontSize = 750 / 100 = 7.5
 
 ##### 5 flex换行布局
 
-一个display：flex的容器，横向的标题和内容，标题不换行，内容换行，则标题设置white-space : nowrap; 内容设置
+一个display：flex的容器，横向的标题和内容，标题不换行，内容换行，则标题设置white-space : nowrap; 内容设置 word-break:break-all;
 
 
 ##### 6 mac chrome关闭跨域模式
 
 open -n /Applications/Google\ Chrome.app/ --args --disable-web-security --user-data-dir=/Users/zhangbo/MyChromeDevUserData/
+
+##### 7应用场景：循环出来的列表，需要根据点击项，动态改变列表中对应id的数据
+
+~~~
+
+// 动态传递id
+<block wx:for="{{list}}" wx:key="{{index}}">
+  <view catch:tap="onChangeName" data-id="{{item.id}}"></view>
+</block>
+
+Page({
+  data: {
+    list:[{
+      id: 0,
+      name: 'wang'
+    },{
+      id: 1,
+      name: 'li'
+    }]
+  },
+  onChangeName: function(event){
+    // 拿到id
+   let id = event.target.dataset.id
+   let key = `list[${id}].name`, val = 'zhang'
+   // 设置值
+   this.setData({
+    [key]: val
+   })
+  }
+})
+~~~

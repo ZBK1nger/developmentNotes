@@ -76,7 +76,7 @@ open -n /Applications/Google\ Chrome.app/ --args --disable-web-security --user-d
 
 // 动态传递id
 <block wx:for="{{list}}" wx:key="{{index}}">
-  <view catch:tap="onChangeName" data-id="{{item.id}}"></view>
+  <view catch:tap="onChangeName" data-index="{{index}}"></view>
 </block>
 
 Page({
@@ -91,12 +91,21 @@ Page({
   },
   onChangeName: function(event){
     // 拿到id
-   let id = event.target.dataset.id
-   let key = `list[${id}].name`, val = 'zhang'
+   let index = event.target.dataset.index
+   let key = `list[${index}].name`, val = 'zhang'
    // 设置值
    this.setData({
     [key]: val
    })
   }
 })
+~~~
+
+##### git识别文件夹大小写
+
+移动到项目文件夹下 输入以下命令
+
+~~~
+git config core.ignorecase false
+
 ~~~
